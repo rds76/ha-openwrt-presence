@@ -1,0 +1,10 @@
+{
+  "domain": "luci_presence_mqtt",
+  "name": "LuCI AP Presence to MQTT",
+  "version": "0.1.0",
+  "requirements": [],
+  "dependencies": ["mqtt"],
+  "codeowners": [],
+  "iot_class": "local_polling",
+  "integration_type": "hub"
+}

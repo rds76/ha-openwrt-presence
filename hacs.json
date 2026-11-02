@@ -1,0 +1,4 @@
+{
+  "name": "LuCI AP Presence to MQTT",
+  "render_readme": true
+}
