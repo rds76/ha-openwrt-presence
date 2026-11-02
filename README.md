@@ -59,7 +59,7 @@ This project requires the LuCI RPC API to be configured on all monitored OpenWRT
 
 Please follow the same LuCI RPC API setup instructions as described in the official Home Assistant OpenWRT integration documentation:
 
-https://www.home-assistant.io/integrations/openwrt/
+https://www.home-assistant.io/integrations/luci/
 
 
 ### MQTT Integration
