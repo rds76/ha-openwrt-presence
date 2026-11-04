@@ -211,7 +211,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         seen: set[str] = set()
         for client, ifaces in clients:
             for iface in ifaces:
-                macs = await client.wifi_assoc_macs(iface)
+                try:
+                    macs = await client.wifi_assoc_macs(iface)
+                except LuciAuthError as exc:
+                    _LOGGER.error("LuCI auth error (%s/%s): %s", client.host, iface, exc)
+                    continue
+                except Exception as exc:  # noqa: BLE001
+                    _LOGGER.error("LuCI poll failed (%s/%s): %s", client.host, iface, exc)
+                    continue
+
                 seen |= macs
 
         now = time.time()
@@ -261,7 +269,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             except Exception as exc:  # noqa: BLE001
                 _LOGGER.exception("Unexpected error in poll loop: %s", exc)
 
-    hass.loop.create_task(_poll_loop())
+    # Background task is cancelled automatically on Home Assistant shutdown
+    hass.async_create_background_task(_poll_loop(), name=f"{DOMAIN}_poll_loop")
 
     _LOGGER.info(
         "luci_presence_mqtt started (hosts=%d tracks=%d scan_interval=%ss)",
