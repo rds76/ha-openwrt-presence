@@ -206,21 +206,24 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             retain=True,
         )
 
-    async def _poll_once() -> None:
-        # Collect "seen" MACs across all hosts+ifaces (union set)
-        seen: set[str] = set()
-        for client, ifaces in clients:
-            for iface in ifaces:
-                try:
-                    macs = await client.wifi_assoc_macs(iface)
-                except LuciAuthError as exc:
-                    _LOGGER.error("LuCI auth error (%s/%s): %s", client.host, iface, exc)
-                    continue
-                except Exception as exc:  # noqa: BLE001
-                    _LOGGER.error("LuCI poll failed (%s/%s): %s", client.host, iface, exc)
-                    continue
+    async def _poll_client(client: LuciClient, ifaces: list[str]) -> set[str]:
+        # Interfaces of one router are polled sequentially to avoid loading it
+        seen_host: set[str] = set()
+        for iface in ifaces:
+            try:
+                seen_host |= await client.wifi_assoc_macs(iface)
+            except LuciAuthError as exc:
+                _LOGGER.error("LuCI auth error (%s/%s): %s", client.host, iface, exc)
+            except Exception as exc:  # noqa: BLE001
+                _LOGGER.error("LuCI poll failed (%s/%s): %s", client.host, iface, exc)
+        return seen_host
 
-                seen |= macs
+    async def _poll_once() -> None:
+        # Routers are polled in parallel; union of MACs seen on all hosts+ifaces
+        results = await asyncio.gather(
+            *(_poll_client(client, ifaces) for client, ifaces in clients)
+        )
+        seen: set[str] = set().union(*results)
 
         now = time.time()
 
