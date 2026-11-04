@@ -5,13 +5,16 @@ import json
 import logging
 import time
 from dataclasses import dataclass
+from datetime import timedelta
 
 import voluptuous as vol
 
 from homeassistant.components import mqtt
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
     DOMAIN,
@@ -254,26 +257,23 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 )
                 tr.last_state = state
 
-    async def _poll_loop() -> None:
-        # Initial run
-        try:
-            await _poll_once()
-        except LuciAuthError as exc:
-            _LOGGER.error("LuCI auth error (initial poll): %s", exc)
-        except Exception as exc:  # noqa: BLE001
-            _LOGGER.exception("Unexpected error (initial poll): %s", exc)
+    poll_lock = asyncio.Lock()
 
-        while True:
-            await asyncio.sleep(scan_interval)
+    async def _scheduled_poll(_now=None) -> None:
+        # Skip the tick if the previous poll is still running
+        if poll_lock.locked():
+            return
+        async with poll_lock:
             try:
                 await _poll_once()
-            except LuciAuthError as exc:
-                _LOGGER.error("LuCI auth error: %s", exc)
             except Exception as exc:  # noqa: BLE001
-                _LOGGER.exception("Unexpected error in poll loop: %s", exc)
+                _LOGGER.exception("Unexpected error during poll: %s", exc)
 
-    # Background task is cancelled automatically on Home Assistant shutdown
-    hass.async_create_background_task(_poll_loop(), name=f"{DOMAIN}_poll_loop")
+    hass.async_create_background_task(_scheduled_poll(), name=f"{DOMAIN}_initial_poll")
+    unsub = async_track_time_interval(
+        hass, _scheduled_poll, timedelta(seconds=scan_interval)
+    )
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, lambda _event: unsub())
 
     _LOGGER.info(
         "luci_presence_mqtt started (hosts=%d tracks=%d scan_interval=%ss)",
