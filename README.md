@@ -6,6 +6,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/rds76/ha-openwrt-presence)](https://github.com/rds76/ha-openwrt-presence/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/rds76/ha-openwrt-presence)](LICENSE)
+![GitHub Validate](https://img.shields.io/github/actions/workflow/status/rds76/ha-openwrt-presence/validate.yaml?label=Validate)
 [![GitHub stars](https://img.shields.io/github/stars/rds76/ha-openwrt-presence?style=social)](https://github.com/rds76/ha-openwrt-presence/stargazers)
 <!--
 [![Support via Revolut](https://img.shields.io/badge/Revolut-Support-blue)](https://revolut.me/radimm5hv)
