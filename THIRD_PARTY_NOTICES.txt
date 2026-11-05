@@ -1,3 +1,12 @@
+Licensing scope
+===============
+
+The MIT License in LICENSE applies to original contributions by rds76.
+Portions derived from Home Assistant's OpenWrt (LuCI) integration remain
+subject to the Apache License, Version 2.0.
+The MIT notice does not replace the license or attribution requirements
+applicable to upstream portions.
+
 Home Assistant OpenWrt (LuCI) integration
 ========================================
 
