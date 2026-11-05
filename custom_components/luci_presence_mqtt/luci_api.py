@@ -1,3 +1,9 @@
+# Portions adapted from Home Assistant's OpenWrt (LuCI) integration.
+# Upstream portions are subject to the Apache License, Version 2.0.
+# Modified by rds76 for Wi-Fi association-based presence detection,
+# MQTT publishing, and RPC authentication and failure handling.
+# See LICENSE, LICENSE-APACHE-2.0 and THIRD_PARTY_NOTICES.txt.
+
 from __future__ import annotations
 
 import asyncio

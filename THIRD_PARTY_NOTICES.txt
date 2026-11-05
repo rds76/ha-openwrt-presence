@@ -1,0 +1,24 @@
+Home Assistant OpenWrt (LuCI) integration
+========================================
+
+This project includes code adapted from the Home Assistant OpenWrt (LuCI)
+integration.
+
+Upstream project:
+https://github.com/home-assistant/core
+
+Integration:
+https://github.com/home-assistant/core/tree/dev/homeassistant/components/luci
+
+License: Apache License, Version 2.0.
+The full license text is included in LICENSE-APACHE-2.0.
+
+The exact upstream revision used for the initial adaptation was not
+recorded and has not been recovered. The links above identify the upstream
+project; they do not identify the historical source revision.
+
+Modifications by rds76 include Wi-Fi association-based presence detection,
+multiple access points and interfaces, MQTT publishing, and changes to
+RPC authentication and failure handling.
+
+This attribution does not imply endorsement by the Home Assistant project.

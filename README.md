@@ -211,4 +211,6 @@ This keeps the main configuration clean and allows MAC addresses and personal de
 
 ## License
 
-MIT License
+Original contributions by rds76 are licensed under the [MIT License](LICENSE).
+Portions adapted from Home Assistant's OpenWrt (LuCI) integration remain subject to the [Apache License, Version 2.0](LICENSE-APACHE-2.0).
+See [third-party notices](THIRD_PARTY_NOTICES.txt) for attribution.
