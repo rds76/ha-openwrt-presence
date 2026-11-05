@@ -38,6 +38,9 @@ LUCIRPC_SYS_PATH = "/cgi-bin/luci/rpc/sys"
 RPC_LOGIN = "login"
 RPC_WIFI_GETIWINFO = "wifi.getiwinfo"
 
+LOGIN_RETRY_INITIAL = 15  # seconds
+LOGIN_RETRY_MAX = 300  # seconds
+
 MQTT_DEVICE_BLOCK = {
     "identifiers": ["luci_presence_mqtt_bridge"],
     "name": "LuCI Presence",

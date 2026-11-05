@@ -7,13 +7,14 @@ import time
 from dataclasses import dataclass
 from datetime import timedelta
 
+from aiohttp import DummyCookieJar
 import voluptuous as vol
 
 from homeassistant.components import mqtt
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
@@ -43,7 +44,7 @@ from .const import (
     DEFAULT_STATE_PREFIX,
     MQTT_DEVICE_BLOCK,
 )
-from .luci_api import LuciClient, LuciAuthError
+from .luci_api import LuciClient, LuciAuthError, LuciCredentialsError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -149,11 +150,17 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     discovery_prefix = mqtt_conf.get(CONF_MQTT_DISCOVERY_PREFIX, DEFAULT_DISCOVERY_PREFIX)
     state_prefix = mqtt_conf.get(CONF_MQTT_STATE_PREFIX, DEFAULT_STATE_PREFIX)
 
-    session = async_get_clientsession(hass)
+    disabled_hosts: set[str] = set()
+
+    def _disable_client(client: LuciClient) -> None:
+        disabled_hosts.add(client.host)
+        client.session.detach()
+        _LOGGER.error("LuCI router %s disabled: authentication failed. Correct its credentials in configuration.yaml and restart Home Assistant.", client.host)
 
     # Build clients
     clients: list[tuple[LuciClient, list[str]]] = []
     for h in conf[CONF_HOSTS]:
+        session = async_create_clientsession(hass, cookie_jar=DummyCookieJar())
         client = LuciClient(
             host=h[CONF_HOST],
             username=h[CONF_USERNAME],
@@ -161,8 +168,20 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             ssl=h[CONF_SSL],
             session=session,
         )
+        try:
+            await client.login()
+        except LuciCredentialsError:
+            _disable_client(client)
+            continue
+        except LuciAuthError:
+            # Temporary connection failures retain the client's retry cooldown.
+            pass
         ifaces = h.get(CONF_INTERFACES) or []
         clients.append((client, ifaces))
+
+    if not clients:
+        _LOGGER.error("LuCI presence setup failed: no routers are available for polling.")
+        return False
 
     # Build tracks from dict mapping
     tracks: list[TrackRuntime] = []
@@ -209,23 +228,29 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             retain=True,
         )
 
+    disabled_hosts: set[str] = set()
+
     async def _poll_client(client: LuciClient, ifaces: list[str]) -> set[str]:
+        if client.host in disabled_hosts:
+            return set()
         # Interfaces of one router are polled sequentially to avoid loading it
         seen_host: set[str] = set()
         for iface in ifaces:
             try:
                 seen_host |= await client.wifi_assoc_macs(iface)
-            except LuciAuthError as exc:
-                _LOGGER.error("LuCI auth error (%s/%s): %s", client.host, iface, exc)
+            except LuciCredentialsError:
+                _disable_client(client)
+                break
+            except LuciAuthError:
+                # The client logs once and controls retries for the whole router.
+                break
             except Exception as exc:  # noqa: BLE001
                 _LOGGER.error("LuCI poll failed (%s/%s): %s", client.host, iface, exc)
         return seen_host
 
     async def _poll_once() -> None:
         # Routers are polled in parallel; union of MACs seen on all hosts+ifaces
-        results = await asyncio.gather(
-            *(_poll_client(client, ifaces) for client, ifaces in clients)
-        )
+        results = await asyncio.gather(*(_poll_client(client, ifaces) for client, ifaces in clients))
         seen: set[str] = set().union(*results)
 
         now = time.time()
@@ -270,9 +295,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 _LOGGER.exception("Unexpected error during poll: %s", exc)
 
     hass.async_create_background_task(_scheduled_poll(), name=f"{DOMAIN}_initial_poll")
-    unsub = async_track_time_interval(
-        hass, _scheduled_poll, timedelta(seconds=scan_interval)
-    )
+    unsub = async_track_time_interval(hass, _scheduled_poll, timedelta(seconds=scan_interval))
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, lambda _event: unsub())
 
     _LOGGER.info(
