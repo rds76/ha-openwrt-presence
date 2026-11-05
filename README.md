@@ -70,6 +70,14 @@ The Home Assistant MQTT integration must be configured and connected to a workin
 
 The application periodically queries configured OpenWRT access points using the LuCI RPC API and retrieves the list of associated Wi-Fi clients from one or more configured wireless interfaces.
 
+Each router uses a dedicated HTTP session with cookies disabled. Authenticated LuCI RPC requests send the login token using the auth query parameter. An expired token triggers at most one login and request retry.
+
+Credentials are checked once for each router before polling starts. If a router rejects the configured credentials, that router is excluded until you correct its credentials in configuration.yaml and restart Home Assistant. The same rule applies if login credentials are rejected during operation after token expiration. The rejection is logged once and no further requests are sent to that router until restart. Other routers continue normally. If every router is excluded during startup, setup fails without starting polling or publishing MQTT discovery or presence states.
+
+Temporary connection failures during startup do not permanently exclude a router; they use the retry delays below. These delays also apply to temporary failures while renewing a token during operation, but not to rejected credentials.
+
+Temporarily unsuccessful logins are retried per router after 15, 30, 60, 120, 240 and then at most every 300 seconds, on the next scheduled poll after the delay expires. Remaining interfaces on that router are skipped after an authentication failure. Only the first failure is logged until a successful login resets the delay and logs recovery. Polling of other routers continues normally.
+
 Presence is determined across all configured access points and SSIDs. A tracked person can be associated with multiple MAC addresses and is considered present if at least one configured device is connected.
 
 Presence information is then published via MQTT and automatically discovered by Home Assistant.
