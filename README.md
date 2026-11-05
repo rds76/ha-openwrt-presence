@@ -7,6 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/rds76/ha-openwrt-presence)](https://github.com/rds76/ha-openwrt-presence/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/rds76/ha-openwrt-presence)](LICENSE)
 ![GitHub Validate](https://img.shields.io/github/actions/workflow/status/rds76/ha-openwrt-presence/validate.yaml?label=validate)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rds76&repository=ha-openwrt-presence&category=integration)
 [![GitHub stars](https://img.shields.io/github/stars/rds76/ha-openwrt-presence?style=social)](https://github.com/rds76/ha-openwrt-presence/stargazers)
 <!--
 [![Support via Revolut](https://img.shields.io/badge/Revolut-Support-blue)](https://revolut.me/radimm5hv)
