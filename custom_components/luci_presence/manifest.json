@@ -1,12 +1,12 @@
 {
-  "domain": "luci_presence_mqtt",
-  "name": "LuCI AP Presence to MQTT",
+  "domain": "luci_presence",
+  "name": "LuCI AP Presence",
   "categories": ["presence_location.network_presence"],
   "codeowners": ["@rds76"],
-  "dependencies": ["mqtt"],
+  "dependencies": [],
   "documentation": "https://github.com/rds76/ha-openwrt-presence",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/rds76/ha-openwrt-presence/issues",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "1.0.0"
 }
