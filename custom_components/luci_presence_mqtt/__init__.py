@@ -101,6 +101,8 @@ def _discovery_topic(discovery_prefix: str, object_id: str) -> str:
 def _state_topic(state_prefix: str, object_id: str) -> str:
     return f"{state_prefix}/{object_id}/state"
 
+def _attributes_topic(state_prefix: str, object_id: str) -> str:
+    return f"{state_prefix}/{object_id}/attributes"
 
 def _normalize_macs(track_conf: dict, object_id: str) -> set[str]:
     macs_list: list[str] = []
@@ -213,6 +215,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             # Allow controlling entity_id at first creation
             "default_entity_id": f"device_tracker.{tr.object_id}",
             "state_topic": _state_topic(state_prefix, tr.object_id),
+            "json_attributes_topic": _attributes_topic(state_prefix, tr.object_id),
             "payload_home": "home",
             "payload_not_home": "not_home",
             "device": MQTT_DEVICE_BLOCK,
@@ -262,6 +265,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
             is_home = tr.last_seen is not None and (now - tr.last_seen) <= tr.consider_home
             state = "home" if is_home else "not_home"
+            in_zones = json.dumps({"in_zones": ["zone.home"] if is_home else []})
 
             if state != tr.last_state:
                 _LOGGER.info(
@@ -272,6 +276,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                     state,
                     tr.consider_home,
                     int(tr.last_seen) if tr.last_seen else None,
+                )
+                await mqtt.async_publish(
+                    hass,
+                    _attributes_topic(state_prefix, tr.object_id),
+                    in_zones,
+                    qos=1,
+                    retain=True,
                 )
                 await mqtt.async_publish(
                     hass,
