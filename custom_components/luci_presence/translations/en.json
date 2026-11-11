@@ -1,6 +1,6 @@
 {
-  "title": "LuCI AP Presence",
   "config": {
+    "step": {},
     "abort": {
       "already_configured": "LuCI AP Presence is already configured.",
       "yaml_only": "Configure luci_presence in configuration.yaml and restart Home Assistant."
