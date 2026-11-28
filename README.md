@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/rds76/ha-openwrt-presence)](https://github.com/rds76/ha-openwrt-presence/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/rds76/ha-openwrt-presence)](LICENSE)
 ![GitHub Validate](https://img.shields.io/github/actions/workflow/status/rds76/ha-openwrt-presence/validate.yaml?label=validate)
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rds76&repository=ha-openwrt-presence&category=integration)
+[![Marketplace / HACS](https://img.shields.io/badge/Marketplace-HACS-41BDF5?logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rds76&repository=ha-openwrt-presence&category=integration)
 [![GitHub stars](https://img.shields.io/github/stars/rds76/ha-openwrt-presence?style=social)](https://github.com/rds76/ha-openwrt-presence/stargazers)
 
 Wi-Fi presence detection for Home Assistant using OpenWrt access points and the LuCI RPC API.
@@ -48,14 +48,17 @@ Follow the LuCI RPC setup instructions in the [Home Assistant OpenWrt documentat
 
 ## Installation
 
-### HACS
+### Marketplace (Home Assistant 2026.11 or newer)
 
-1. Open HACS.
-2. Open **Custom repositories** from the menu.
-3. Add `https://github.com/rds76/ha-openwrt-presence` with category **Integration**.
-4. Download the integration.
-5. Add the YAML configuration described below.
-6. Restart Home Assistant.
+1. Open **Settings → Marketplace**.
+2. Search for **LuCI AP Presence to MQTT** and select **Install**.
+3. Restart Home Assistant.
+
+### HACS (Home Assistant 2026.10 or older)
+
+1. Open **HACS**.
+2. Search for **LuCI AP Presence to MQTT** and click **Download**.
+3. Restart Home Assistant.
 
 ### Manual installation
 
